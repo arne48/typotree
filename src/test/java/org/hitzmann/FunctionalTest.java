@@ -8,7 +8,7 @@ import org.hitzmann.typotree.Tree;
 /**
  * Unit test for simple Main.
  */
-public class FunctionTest
+public class FunctionalTest
     extends TestCase
 {
     /**
@@ -16,7 +16,7 @@ public class FunctionTest
      *
      * @param testName name of the test case
      */
-    public FunctionTest(String testName )
+    public FunctionalTest(String testName )
     {
         super( testName );
     }
@@ -26,7 +26,7 @@ public class FunctionTest
      */
     public static Test suite()
     {
-        return new TestSuite( FunctionTest.class );
+        return new TestSuite( FunctionalTest.class );
     }
 
     /**

@@ -18,13 +18,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class SpeedTest {
 
-    private final static int LENGTH = 10000;
-    private final static int MAX_DISTANCE = 4;
+    private final static int LENGTH = 100000;
+    private final static int MAX_DISTANCE = 2;
 
 
     @Test
-    public void testSpeed() throws Exception {
-
+    public void testSpeedTypoTree() throws Exception {
+        System.out.println("Using TypoTree");
         ArrayList<String> list = readWords();
         Tree ttree = new Tree();
         ttree.addWordList(list);
@@ -40,12 +40,45 @@ public class SpeedTest {
 
             for (int j = 0; j < typos.size(); j++) {
                 timer.start();
-                assertTrue(ttree.checkWord(typos.get(j), i));
+                try {
+                    assertTrue(ttree.checkWord(typos.get(j), i));
+                }catch(AssertionError e){
+                    System.out.println("I was wrong with " + typos.get(j) + " being in distance " + i);
+                    throw new AssertionError();
+                }
                 timer.stop();
             }
 
             System.out.println("Checking " + LENGTH + " words in a dictionary of " + list.size() + " words with a distance of " + i + "\ntook " + timer.getTotalTimeInMillis() +
-                    " milliseconds in total with a meantime of " + timer.getMeanDurationInNanos() + " nano seconds");
+                    " milliseconds in total with a meantime of " + timer.getMeanDurationInNanos() + " nano seconds per word");
+
+        }
+
+    }
+
+    @Test
+    public void testSpeedRosettaCode() throws Exception {
+        System.out.println("Using Rosetta Levenshtein Distance Algorithm");
+        ArrayList<String> list = readWords();
+        ArrayList<String> typos;
+
+        for (int i = 1; i <= MAX_DISTANCE; i++) {
+            TimeMeasurement timer = new TimeMeasurement();
+            timer.start();
+            typos = generateTypos(i, list, LENGTH <= 100 ? LENGTH : 100);
+            timer.stop();
+            System.out.println("Typos with distance " + i + " generated in " + timer.getMeanDurationInMillis() + " milliseconds");
+            timer.reset();
+
+            for (int j = 0; j < typos.size(); j++) {
+                timer.start();
+                assertTrue(LevenshteinRosetta.checkWord(typos.get(j), list, i));
+                timer.stop();
+            }
+
+            int amount = LENGTH <= 100 ? LENGTH : 100;
+            System.out.println("Checking " + amount + " words in a dictionary of " + list.size() + " words with a distance of " + i + "\ntook " + timer.getTotalTimeInMillis() +
+                    " milliseconds in total with a meantime of " + timer.getMeanDurationInNanos() + " nano seconds per word");
 
         }
 
@@ -61,7 +94,7 @@ public class SpeedTest {
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Something is wrong with the ngerman wordlist. Maybe install wngerman package");
+            System.err.println("Something is wrong with the ngerman wordlist. Please install wngerman package");
         }
 
         return ret;
@@ -72,7 +105,7 @@ public class SpeedTest {
         StringBuilder sb;
         Random rand = new Random(0);
 
-        for (int a = 0; a < amount; a++) {
+        for (int a = 0; a < amount;) {
 
             String word;
             do {
@@ -106,7 +139,11 @@ public class SpeedTest {
                 }
             }
 
-            ret.add(sb.toString());
+            if(LevenshteinRosetta.distance(sb.toString(), word) == distance && !sb.toString().isEmpty()){
+                ret.add(sb.toString());
+                a++;
+            }
+
         }
 
         return ret;
